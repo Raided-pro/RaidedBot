@@ -36,5 +36,5 @@ if __name__ == "__main__":
 
     bot = commands.Bot(command_prefix="$", intents=intents)
     bot.add_cog(General(bot))
-    bot.add_cog(gw2Bot.LogUploader(bot, gw2Bot.gw2.teamIDs))
+    bot.add_cog(gw2Bot.LogUploader(bot, gw2Bot.gw2.app.teamIDs))
     bot.run(config["token"])
