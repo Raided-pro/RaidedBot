@@ -3,3 +3,4 @@ botConfig.json
 dbConfig.json
 __pycache__
 .vscode
+events.json
