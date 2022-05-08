@@ -1,0 +1,3 @@
+[submodule "RaidedGW2Bot"]
+	path = RaidedGW2Bot
+	url = git@github.com:Raided-pro/RaidedGW2Bot.git
