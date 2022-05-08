@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import logging
 import json
-import RaidedGW2Bot.bot as gw2Bot
+from RaidedGW2Bot import bot as gw2Bot
 
 
 class General(commands.Cog):
