@@ -1,3 +1,6 @@
 [submodule "RaidedGW2Bot"]
 	path = RaidedGW2Bot
 	url = git@github.com:Raided-pro/RaidedGW2Bot.git
+[submodule "EventManager"]
+	path = EventManager
+	url = git@github.com:Raided-pro/EventManager.git
