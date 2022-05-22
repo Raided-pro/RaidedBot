@@ -8,7 +8,12 @@ import asyncio
 
 
 class RaidedBot(commands.Bot):
-    def __init__(self, *args, intents: discord.Intents, **kwargs,):
+    def __init__(
+        self,
+        *args,
+        intents: discord.Intents,
+        **kwargs,
+    ):
         super().__init__(*args, intents=intents, **kwargs)
 
     async def setup_hook(self):
@@ -17,6 +22,7 @@ class RaidedBot(commands.Bot):
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
+        
 class General(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -45,11 +51,16 @@ if __name__ == "__main__":
     intents.members = True
     intents.message_content = True
 
-    bot = RaidedBot(command_prefix="$", intents=intents, application_id=config["application_id"])
+    bot = RaidedBot(
+        command_prefix="$",
+        intents=intents,
+        application_id=config["application_id"],
+    )
+
     async def setup(bot):
         await bot.add_cog(General(bot))
         await bot.add_cog(gw2Bot.LogUploader(bot, gw2Bot.gw2.app.teamIDs))
         await bot.add_cog(eventMan.EventManager(bot))
         await bot.start(config["token"])
-    
+
     asyncio.run(setup(bot))
