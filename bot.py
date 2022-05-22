@@ -3,6 +3,8 @@ from discord.ext import commands
 import logging
 import json
 from RaidedGW2Bot import bot as gw2Bot
+from EventManager import bot as eventMan
+import asyncio
 
 
 class RaidedBot(commands.Bot):
@@ -20,7 +22,7 @@ class RaidedBot(commands.Bot):
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
-
+        
 class General(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -28,7 +30,6 @@ class General(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"Logged on as {self.bot.user}!")
-
 
 if __name__ == "__main__":
     # Load config
