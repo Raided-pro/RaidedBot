@@ -1,4 +1,3 @@
-botConfig.json
 *.log
-dbConfig.json
 __pycache__
+*.json
