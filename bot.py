@@ -2,7 +2,9 @@ import discord
 from discord.ext import commands
 import logging
 import json
+import asyncio
 from RaidedGW2Bot import bot as gw2Bot
+from EventManager import bot as eventMan
 
 
 class RaidedBot(commands.Bot):
