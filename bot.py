@@ -17,10 +17,7 @@ class RaidedBot(commands.Bot):
         super().__init__(*args, intents=intents, **kwargs)
 
     async def setup_hook(self):
-        # TODO: Fix commands not propagating
-        # This copies the global commands over to your guild.
-        serverID = discord.Object(id=940689261567557634)
-        self.tree.copy_global_to(guild=serverID)
+        serverID = discord.Object(id=826138485743288330)
         await self.tree.sync(guild=serverID)
 
 
@@ -61,7 +58,7 @@ if __name__ == "__main__":
 
     async def setup(bot):
         await bot.add_cog(General(bot))
-        await bot.add_cog(gw2Bot.LogUploader(bot, gw2Bot.gw2.app.teamIDs))
+        # await bot.add_cog(gw2Bot.LogUploader(bot, gw2Bot.gw2.app.teamIDs))
         await bot.add_cog(eventMan.EventManager(bot))
         await bot.start(config["token"])
 
