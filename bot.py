@@ -17,12 +17,13 @@ class RaidedBot(commands.Bot):
         super().__init__(*args, intents=intents, **kwargs)
 
     async def setup_hook(self):
+        # TODO: Fix commands not propagating
         # This copies the global commands over to your guild.
         serverID = discord.Object(id=940689261567557634)
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
-        
+
 class General(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -30,6 +31,7 @@ class General(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"Logged on as {self.bot.user}!")
+
 
 if __name__ == "__main__":
     # Load config
@@ -40,7 +42,7 @@ if __name__ == "__main__":
     logger = logging.getLogger("discord")
     logger.setLevel(logging.ERROR)
     handler = logging.FileHandler(
-        filename="bot.log", encoding="utf-8", mode="w"
+        filename="bot.log", encoding="utf-8", mode="a"
     )
     handler.setFormatter(
         logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
