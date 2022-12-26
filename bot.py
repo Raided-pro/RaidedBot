@@ -1,11 +1,12 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 import logging
 import json
 import asyncio
-from RaidedGW2Bot import bot as gw2Bot
-from EventManager import bot as eventMan
 from typing import Literal
+
+DEBUGGUILD = 826138485743288330
 
 
 class RaidedBot(commands.Bot):
@@ -18,7 +19,7 @@ class RaidedBot(commands.Bot):
         super().__init__(*args, intents=intents, **kwargs)
 
     async def setup_hook(self):
-        serverID = discord.Object(id=826138485743288330)
+        serverID = discord.Object(id=DEBUGGUILD)
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
@@ -39,7 +40,7 @@ class General(commands.Cog):
     async def ping(self, ctx: commands.Context):
         await ctx.send("Pong!", ephemeral=True)
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.is_owner()
     async def sync(
         self,
@@ -60,53 +61,64 @@ class General(commands.Cog):
         else:
             await ctx.send("Invalid option", ephemeral=True)
 
-    @commands.hybrid_command()
+    @app_commands.command(description="Load a module's commands")
+    @app_commands.default_permissions(administrator=True)
     async def load_module(
-        self, ctx: commands.Context, module: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, module: Literal["gw2", "event"]
     ):
         if module == "gw2":
-            await ctx.send("GW2 module is not ready yet.", ephemeral=True)
+            await interaction.response.send_message(
+                content="GW2 module is not ready yet.", ephemeral=True
+            )
         elif module == "event":
             # Check if the events manager cog is loaded
             if "EventManager.bot" in self.bot.extensions:
                 # Reload extension
                 commandCount = await self._add_module_commands(
-                    self.bot.cogs["EventManager"], ctx.guild
+                    self.bot.cogs["EventManager"], interaction.guild
                 )
-                await ctx.send(
-                    f"Events manager module reloaded with {commandCount} command(s).",
+                await interaction.response.send(
+                    content=f"Events manager module reloaded with {commandCount} command(s).",
                     ephemeral=True,
                 )
             else:
                 # Load extension
-                await ctx.send(
-                    "Events manager cog is unavailable.", ephemeral=True
+                await interaction.response.send_message(
+                    content="Events manager cog is unavailable.",
+                    ephemeral=True,
                 )
         else:
-            await ctx.send("Invalid module", ephemeral=True)
+            await interaction.response.send_message(
+                content="Invalid module", ephemeral=True
+            )
 
-    @commands.hybrid_command()
+    @app_commands.command(description="Unload a module's commands")
+    @app_commands.default_permissions(administrator=True)
     async def unload_module(
-        self, ctx: commands.Context, module: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, module: Literal["gw2", "event"]
     ):
         if module == "gw2":
-            await ctx.send("GW2 module is not ready yet.", ephemeral=True)
+            await interaction.response.send_message(
+                content="GW2 module is not ready yet.", ephemeral=True
+            )
         elif module == "event":
             # Check if the events manager cog is loaded
             if "EventManager.bot" in self.bot.extensions:
                 commandCount = await self._remove_module_commands(
-                    self.bot.cogs["EventManager"], ctx.guild
+                    self.bot.cogs["EventManager"], interaction.guild
                 )
-                await ctx.send(
-                    f"Events manager module unloaded with {commandCount} command(s).",
+                await interaction.response.send_message(
+                    content=f"Events manager module unloaded with {commandCount} command(s).",
                     ephemeral=True,
                 )
             else:
-                await ctx.send(
-                    "Events manager cog is not loaded", ephemeral=True
+                await interaction.response.send_message(
+                    content="Events manager cog is not loaded", ephemeral=True
                 )
         else:
-            await ctx.send("Invalid module", ephemeral=True)
+            await interaction.response.send_message(
+                content="Invalid module", ephemeral=True
+            )
 
     async def _add_module_commands(self, cog, guild):
         counter = 0
@@ -128,50 +140,71 @@ class General(commands.Cog):
         await self.bot.tree.sync(guild=guild)
         return counter
 
-    @commands.hybrid_command()
+    @app_commands.guilds(DEBUGGUILD)
+    class DevGroup(app_commands.Group):
+        def __init__(self):
+            super().__init__(name="dev", description="Development commands")
+
+    devGroup = DevGroup()
+
+    @devGroup.command(description="Load a cog")
     @commands.is_owner()
     async def load_cog(
-        self, ctx: commands.Context, cog: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, cog: Literal["gw2", "event"]
     ):
         if cog == "gw2":
-            await ctx.send("GW2 module is not ready yet", ephemeral=True)
+            await interaction.response.send_message(
+                content="GW2 module is not ready yet", ephemeral=True
+            )
         elif cog == "event":
             # Check if the events manager cog is loaded
             if "EventManager.bot" in self.bot.extensions:
                 # Reload extension
                 await self.bot.reload_extension("EventManager.bot")
-                await ctx.send("Events manager cog reloaded", ephemeral=True)
+                await interaction.response.send_message(
+                    content="Events manager cog reloaded", ephemeral=True
+                )
             else:
                 # Load extension
                 await self.bot.load_extension("EventManager.bot")
-                await ctx.send("Events manager cog loaded", ephemeral=True)
+                await interaction.response.send_message(
+                    content="Events manager cog loaded", ephemeral=True
+                )
         else:
-            await ctx.send("Invalid module", ephemeral=True)
+            await interaction.response.send_message(
+                content="Invalid module", ephemeral=True
+            )
 
-    @commands.hybrid_command()
+    @devGroup.command(description="Unload a cog")
     @commands.is_owner()
     async def unload_cog(
-        self, ctx: commands.Context, cog: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, cog: Literal["gw2", "event"]
     ):
         if cog == "gw2":
-            await ctx.send("GW2 cog is not ready yet", ephemeral=True)
+            await interaction.response.send_message(
+                content="GW2 cog is not ready yet", ephemeral=True
+            )
         elif cog == "event":
             # Check if the events manager cog is loaded
             if "EventManager.bot" in self.bot.extensions:
                 await self.bot.unload_extension("EventManager.bot")
-                await ctx.send("Events manager cog unloaded", ephemeral=True)
+                await interaction.response.send_message(
+                    content="Events manager cog unloaded", ephemeral=True
+                )
             else:
-                await ctx.send(
-                    "Events manager cog is not loaded", ephemeral=True
+                await interaction.response.send_message(
+                    content="Events manager cog is not loaded", ephemeral=True
                 )
         else:
-            await ctx.send("Invalid module", ephemeral=True)
+            await interaction.response.send_message(
+                content="Invalid module", ephemeral=True
+            )
 
-    @commands.hybrid_command()
+    @devGroup.command(description="List loaded cogs")
     @commands.is_owner()
-    async def list_cogs(self, ctx: commands.Context):
-        await ctx.send(
-            "Loaded cogs: " + ", ".join(self.bot.extensions.keys()),
+    async def list_cogs(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            content="Loaded cogs: " + ", ".join(self.bot.extensions.keys()),
             ephemeral=True,
         )
 
