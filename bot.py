@@ -22,6 +22,9 @@ class RaidedBot(commands.Bot):
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
+        # Load cogs on startup
+        await self.load_extension("EventManager.bot")
+
 
 class General(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -47,12 +50,83 @@ class General(commands.Cog):
         if options == "unsync":
             self.bot.tree.clear_commands(guild=guild)
             await self.bot.tree.sync(guild=guild)
+            await ctx.send("Commands unsynced", ephemeral=True)
         elif options == "sync":
             await self.bot.tree.sync(guild=guild)
+            await ctx.send("Commands synced", ephemeral=True)
         elif options == "global":
             await self.bot.tree.sync()
+            await ctx.send("Commands synced globally", ephemeral=True)
         else:
             await ctx.send("Invalid option", ephemeral=True)
+
+    @commands.hybrid_command()
+    async def load_module(
+        self, ctx: commands.Context, module: Literal["gw2", "event"]
+    ):
+        if module == "gw2":
+            await ctx.send("GW2 module is not ready yet.", ephemeral=True)
+        elif module == "event":
+            # Check if the events manager cog is loaded
+            if "EventManager.bot" in self.bot.extensions:
+                # Reload extension
+                commandCount = await self._add_module_commands(
+                    self.bot.cogs["EventManager"], ctx.guild
+                )
+                await ctx.send(
+                    f"Events manager module reloaded with {commandCount} command(s).",
+                    ephemeral=True,
+                )
+            else:
+                # Load extension
+                await ctx.send(
+                    "Events manager cog is unavailable.", ephemeral=True
+                )
+        else:
+            await ctx.send("Invalid module", ephemeral=True)
+
+    @commands.hybrid_command()
+    async def unload_module(
+        self, ctx: commands.Context, module: Literal["gw2", "event"]
+    ):
+        if module == "gw2":
+            await ctx.send("GW2 module is not ready yet.", ephemeral=True)
+        elif module == "event":
+            # Check if the events manager cog is loaded
+            if "EventManager.bot" in self.bot.extensions:
+                commandCount = await self._remove_module_commands(
+                    self.bot.cogs["EventManager"], ctx.guild
+                )
+                await ctx.send(
+                    f"Events manager module unloaded with {commandCount} command(s).",
+                    ephemeral=True,
+                )
+            else:
+                await ctx.send(
+                    "Events manager cog is not loaded", ephemeral=True
+                )
+        else:
+            await ctx.send("Invalid module", ephemeral=True)
+
+    async def _add_module_commands(self, cog, guild):
+        counter = 0
+        for command in cog.walk_app_commands():
+            self.bot.tree.add_command(command, guild=guild, override=True)
+            counter += 1
+
+        await self.bot.tree.sync(guild=guild)
+
+        return counter
+
+    async def _remove_module_commands(self, cog, guild):
+        counter = 0
+        for command in cog.walk_app_commands():
+            removed = self.bot.tree.remove_command(command.name, guild=guild)
+            if removed is not None:
+                counter += 1
+
+        await self.bot.tree.sync(guild=guild)
+        return counter
 
     @commands.hybrid_command()
     @commands.is_owner()
