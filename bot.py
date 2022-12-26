@@ -77,7 +77,7 @@ class General(commands.Cog):
                 commandCount = await self._add_module_commands(
                     self.bot.cogs["EventManager"], interaction.guild
                 )
-                await interaction.response.send(
+                await interaction.response.send_message(
                     content=f"Events manager module reloaded with {commandCount} command(s).",
                     ephemeral=True,
                 )
