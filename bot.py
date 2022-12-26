@@ -5,6 +5,7 @@ import json
 import asyncio
 from RaidedGW2Bot import bot as gw2Bot
 from EventManager import bot as eventMan
+from typing import Literal
 
 
 class RaidedBot(commands.Bot):
@@ -18,21 +19,39 @@ class RaidedBot(commands.Bot):
 
     async def setup_hook(self):
         serverID = discord.Object(id=826138485743288330)
+        self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
-
-class General(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
-    @commands.Cog.listener()
     async def on_ready(self):
-        print(f"Logged on as {self.bot.user}!")
+        print(f"Logged on as {self.user}!")
+
+    @commands.command()
+    @commands.is_owner()
+    async def ping(self, ctx: commands.Context):
+        await ctx.send("Pong!", ephemeral=True)
+
+    @commands.hybrid_command()
+    @commands.is_owner()
+    async def sync(
+        self,
+        ctx: commands.Context,
+        options: Literal["unsync", "sync", "global"],
+        guild: discord.Guild = discord.Object(id=826138485743288330),
+    ):
+        if options == "unsync":
+            self.bot.tree.clear_commands(guild=guild)
+            await self.bot.tree.sync(guild=guild)
+        elif options == "sync":
+            await self.bot.tree.sync(guild=guild)
+        elif options == "global":
+            await self.bot.tree.sync()
+        else:
+            await ctx.send("Invalid option", ephemeral=True)
 
 
 if __name__ == "__main__":
     # Load config
-    with open("botConfig.json") as f:
+    with open("botDevConfig.json") as f:
         config = json.load(f)
 
     # Setup logger
@@ -57,9 +76,6 @@ if __name__ == "__main__":
     )
 
     async def setup(bot):
-        await bot.add_cog(General(bot))
-        # await bot.add_cog(gw2Bot.LogUploader(bot, gw2Bot.gw2.app.teamIDs))
-        await bot.add_cog(eventMan.EventManager(bot))
         await bot.start(config["token"])
 
     asyncio.run(setup(bot))
