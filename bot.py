@@ -22,8 +22,14 @@ class RaidedBot(commands.Bot):
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
 
+
+class General(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @commands.Cog.listener()
     async def on_ready(self):
-        print(f"Logged on as {self.user}!")
+        print(f"Logged on as {self.bot.user}!")
 
     @commands.command()
     @commands.is_owner()
@@ -47,6 +53,53 @@ class RaidedBot(commands.Bot):
             await self.bot.tree.sync()
         else:
             await ctx.send("Invalid option", ephemeral=True)
+
+    @commands.hybrid_command()
+    @commands.is_owner()
+    async def load_cog(
+        self, ctx: commands.Context, cog: Literal["gw2", "event"]
+    ):
+        if cog == "gw2":
+            await ctx.send("GW2 module is not ready yet", ephemeral=True)
+        elif cog == "event":
+            # Check if the events manager cog is loaded
+            if "EventManager.bot" in self.bot.extensions:
+                # Reload extension
+                await self.bot.reload_extension("EventManager.bot")
+                await ctx.send("Events manager cog reloaded", ephemeral=True)
+            else:
+                # Load extension
+                await self.bot.load_extension("EventManager.bot")
+                await ctx.send("Events manager cog loaded", ephemeral=True)
+        else:
+            await ctx.send("Invalid module", ephemeral=True)
+
+    @commands.hybrid_command()
+    @commands.is_owner()
+    async def unload_cog(
+        self, ctx: commands.Context, cog: Literal["gw2", "event"]
+    ):
+        if cog == "gw2":
+            await ctx.send("GW2 cog is not ready yet", ephemeral=True)
+        elif cog == "event":
+            # Check if the events manager cog is loaded
+            if "EventManager.bot" in self.bot.extensions:
+                await self.bot.unload_extension("EventManager.bot")
+                await ctx.send("Events manager cog unloaded", ephemeral=True)
+            else:
+                await ctx.send(
+                    "Events manager cog is not loaded", ephemeral=True
+                )
+        else:
+            await ctx.send("Invalid module", ephemeral=True)
+
+    @commands.hybrid_command()
+    @commands.is_owner()
+    async def list_cogs(self, ctx: commands.Context):
+        await ctx.send(
+            "Loaded cogs: " + ", ".join(self.bot.extensions.keys()),
+            ephemeral=True,
+        )
 
 
 if __name__ == "__main__":
@@ -76,6 +129,7 @@ if __name__ == "__main__":
     )
 
     async def setup(bot):
+        await bot.add_cog(General(bot))
         await bot.start(config["token"])
 
     asyncio.run(setup(bot))
