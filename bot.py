@@ -73,16 +73,19 @@ class General(commands.Cog):
         elif module == "event":
             # Check if the events manager cog is loaded
             if "EventManager.bot" in self.bot.extensions:
+                # Defer as this might take a bit
+                await interaction.response.defer(ephemeral=True, thinking=True)
+
                 # Reload extension
                 commandCount = await self._add_module_commands(
                     self.bot.cogs["EventManager"], interaction.guild
                 )
-                await interaction.response.send_message(
+
+                await interaction.followup.send(
                     content=f"Events manager module reloaded with {commandCount} command(s).",
-                    ephemeral=True,
                 )
             else:
-                # Load extension
+                # Extension not available
                 await interaction.response.send_message(
                     content="Events manager cog is unavailable.",
                     ephemeral=True,
@@ -104,12 +107,14 @@ class General(commands.Cog):
         elif module == "event":
             # Check if the events manager cog is loaded
             if "EventManager.bot" in self.bot.extensions:
+                # Defer as this might take a bit
+                await interaction.response.defer(ephemeral=True, thinking=True)
+
                 commandCount = await self._remove_module_commands(
                     self.bot.cogs["EventManager"], interaction.guild
                 )
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     content=f"Events manager module unloaded with {commandCount} command(s).",
-                    ephemeral=True,
                 )
             else:
                 await interaction.response.send_message(
