@@ -132,7 +132,6 @@ class General(commands.Cog):
     devGroup = DevGroup()
 
     @devGroup.command(description="Load a cog")
-    @app_commands.check(commands.is_owner)
     async def load_cog(
         self, interaction: discord.Interaction, cog: Literal["gw2", "event"]
     ):
@@ -160,7 +159,6 @@ class General(commands.Cog):
             )
 
     @devGroup.command(description="Unload a cog")
-    @app_commands.check(commands.is_owner)
     async def unload_cog(
         self, interaction: discord.Interaction, cog: Literal["gw2", "event"]
     ):
@@ -185,7 +183,6 @@ class General(commands.Cog):
             )
 
     @devGroup.command(description="List loaded cogs")
-    @app_commands.check(commands.is_owner)
     async def list_cogs(self, interaction: discord.Interaction):
         await interaction.response.send_message(
             content="Loaded cogs: " + ", ".join(self.bot.extensions.keys()),
