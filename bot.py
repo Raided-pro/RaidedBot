@@ -10,6 +10,10 @@ DEBUGGUILD = 826138485743288330
 
 
 class RaidedBot(commands.Bot):
+    """
+    Base bot class for RaidedBot
+    """
+
     def __init__(
         self,
         *args,
@@ -19,6 +23,7 @@ class RaidedBot(commands.Bot):
         super().__init__(*args, intents=intents, **kwargs)
 
     async def setup_hook(self):
+        """Called after bot is ready, copies global to debug guild and load extensions"""
         serverID = discord.Object(id=DEBUGGUILD)
         self.tree.copy_global_to(guild=serverID)
         await self.tree.sync(guild=serverID)
@@ -28,12 +33,20 @@ class RaidedBot(commands.Bot):
 
 
 class General(commands.Cog):
+    """
+    Cog for commands that will always be available, includes module management and dev commands.
+    """
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"Logged on as {self.bot.user}!")
+
+    """
+    Command group for module management
+    """
 
     @app_commands.default_permissions(administrator=True)
     class ModuleGroup(app_commands.Group):
@@ -44,7 +57,7 @@ class General(commands.Cog):
 
     @moduleGroup.command(description="Load a module's commands")
     async def load(
-        self, interaction: discord.Interaction, module: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, module: Literal["event", "gw2"]
     ):
         if module == "gw2":
             await interaction.response.send_message(
@@ -77,7 +90,7 @@ class General(commands.Cog):
 
     @moduleGroup.command(description="Unload a module's commands")
     async def unload(
-        self, interaction: discord.Interaction, module: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, module: Literal["event", "gw2"]
     ):
         if module == "gw2":
             await interaction.response.send_message(
@@ -104,7 +117,13 @@ class General(commands.Cog):
                 content="Invalid module", ephemeral=True
             )
 
-    async def _add_module_commands(self, cog, guild):
+    async def _add_module_commands(
+        self, cog: commands.Cog, guild: discord.Guild
+    ) -> int:
+        """
+        Adds all commmands from cog to the guild's tree and syncs it then
+        returns the number of commands added
+        """
         counter = 0
         for command in cog.walk_app_commands():
             self.bot.tree.add_command(command, guild=guild, override=True)
@@ -115,6 +134,10 @@ class General(commands.Cog):
         return counter
 
     async def _remove_module_commands(self, cog, guild):
+        """
+        Removes all commands from cog from the guild's tree and syncs it then
+        returns the number of commands removed
+        """
         counter = 0
         for command in cog.walk_app_commands():
             removed = self.bot.tree.remove_command(command.name, guild=guild)
@@ -123,6 +146,10 @@ class General(commands.Cog):
 
         await self.bot.tree.sync(guild=guild)
         return counter
+
+    """
+    Command group for dev commands
+    """
 
     @app_commands.guilds(DEBUGGUILD)
     class DevGroup(app_commands.Group):
@@ -184,14 +211,21 @@ class General(commands.Cog):
 
     @devGroup.command(description="List loaded cogs")
     async def list_cogs(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            content="Loaded cogs: " + ", ".join(self.bot.extensions.keys()),
-            ephemeral=True,
-        )
+        cogs = self.bot.extensions.keys()
+        if len(cogs) == 0:
+            await interaction.response.send_message(
+                content="No cogs loaded", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                content="Loaded cogs: " + ", ".join(cogs),
+                ephemeral=True,
+            )
 
     @commands.command()
     @commands.is_owner()
     async def ping(self, ctx: commands.Context):
+        """Message command primarily for debugging"""
         await ctx.send("Pong!", ephemeral=True)
 
     @commands.command()
@@ -199,9 +233,11 @@ class General(commands.Cog):
     async def sync(
         self,
         ctx: commands.Context,
+        *,
         options: Literal["unsync", "sync", "global"],
         guild: discord.Guild = discord.Object(id=DEBUGGUILD),
     ):
+        """Collection of commands to assist with syncing commands"""
         if options == "unsync":
             self.bot.tree.clear_commands(guild=guild)
             await self.bot.tree.sync(guild=guild)
