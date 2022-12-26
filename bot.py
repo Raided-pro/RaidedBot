@@ -35,35 +35,15 @@ class General(commands.Cog):
     async def on_ready(self):
         print(f"Logged on as {self.bot.user}!")
 
-    @commands.command()
-    @commands.is_owner()
-    async def ping(self, ctx: commands.Context):
-        await ctx.send("Pong!", ephemeral=True)
-
-    @commands.command()
-    @commands.is_owner()
-    async def sync(
-        self,
-        ctx: commands.Context,
-        options: Literal["unsync", "sync", "global"],
-        guild: discord.Guild = discord.Object(id=826138485743288330),
-    ):
-        if options == "unsync":
-            self.bot.tree.clear_commands(guild=guild)
-            await self.bot.tree.sync(guild=guild)
-            await ctx.send("Commands unsynced", ephemeral=True)
-        elif options == "sync":
-            await self.bot.tree.sync(guild=guild)
-            await ctx.send("Commands synced", ephemeral=True)
-        elif options == "global":
-            await self.bot.tree.sync()
-            await ctx.send("Commands synced globally", ephemeral=True)
-        else:
-            await ctx.send("Invalid option", ephemeral=True)
-
-    @app_commands.command(description="Load a module's commands")
     @app_commands.default_permissions(administrator=True)
-    async def load_module(
+    class ModuleGroup(app_commands.Group):
+        def __init__(self):
+            super().__init__(name="module", description="Manage modules")
+
+    moduleGroup = ModuleGroup()
+
+    @moduleGroup.command(description="Load a module's commands")
+    async def load(
         self, interaction: discord.Interaction, module: Literal["gw2", "event"]
     ):
         if module == "gw2":
@@ -95,9 +75,8 @@ class General(commands.Cog):
                 content="Invalid module", ephemeral=True
             )
 
-    @app_commands.command(description="Unload a module's commands")
-    @app_commands.default_permissions(administrator=True)
-    async def unload_module(
+    @moduleGroup.command(description="Unload a module's commands")
+    async def unload(
         self, interaction: discord.Interaction, module: Literal["gw2", "event"]
     ):
         if module == "gw2":
@@ -212,6 +191,32 @@ class General(commands.Cog):
             content="Loaded cogs: " + ", ".join(self.bot.extensions.keys()),
             ephemeral=True,
         )
+
+    @commands.command()
+    @commands.is_owner()
+    async def ping(self, ctx: commands.Context):
+        await ctx.send("Pong!", ephemeral=True)
+
+    @commands.command()
+    @commands.is_owner()
+    async def sync(
+        self,
+        ctx: commands.Context,
+        options: Literal["unsync", "sync", "global"],
+        guild: discord.Guild = discord.Object(id=DEBUGGUILD),
+    ):
+        if options == "unsync":
+            self.bot.tree.clear_commands(guild=guild)
+            await self.bot.tree.sync(guild=guild)
+            await ctx.send("Commands unsynced", ephemeral=True)
+        elif options == "sync":
+            await self.bot.tree.sync(guild=guild)
+            await ctx.send("Commands synced", ephemeral=True)
+        elif options == "global":
+            await self.bot.tree.sync()
+            await ctx.send("Commands synced globally", ephemeral=True)
+        else:
+            await ctx.send("Invalid option", ephemeral=True)
 
 
 if __name__ == "__main__":
