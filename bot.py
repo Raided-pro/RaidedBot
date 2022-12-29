@@ -29,7 +29,7 @@ class RaidedBot(commands.Bot):
         await self.tree.sync(guild=serverID)
 
         # Load cogs on startup
-        await self.load_extension("EventManager.event")
+        await self.load_extension("EventManager.events")
 
 
 class General(commands.Cog):
@@ -57,15 +57,15 @@ class General(commands.Cog):
 
     @moduleGroup.command(description="Load a module's commands")
     async def load(
-        self, interaction: discord.Interaction, module: Literal["event", "gw2"]
+        self, interaction: discord.Interaction, module: Literal["events", "gw2"]
     ):
         if module == "gw2":
             await interaction.response.send_message(
                 content="GW2 module is not ready yet.", ephemeral=True
             )
-        elif module == "event":
+        elif module == "events":
             # Check if the events manager cog is loaded
-            if "EventManager.event" in self.bot.extensions:
+            if "EventManager.events" in self.bot.extensions:
                 # Defer as this might take a bit
                 await interaction.response.defer(ephemeral=True, thinking=True)
 
@@ -90,15 +90,15 @@ class General(commands.Cog):
 
     @moduleGroup.command(description="Unload a module's commands")
     async def unload(
-        self, interaction: discord.Interaction, module: Literal["event", "gw2"]
+        self, interaction: discord.Interaction, module: Literal["events", "gw2"]
     ):
         if module == "gw2":
             await interaction.response.send_message(
                 content="GW2 module is not ready yet.", ephemeral=True
             )
-        elif module == "event":
+        elif module == "events":
             # Check if the events manager cog is loaded
-            if "EventManager.event" in self.bot.extensions:
+            if "EventManager.events" in self.bot.extensions:
                 # Defer as this might take a bit
                 await interaction.response.defer(ephemeral=True, thinking=True)
 
@@ -160,23 +160,23 @@ class General(commands.Cog):
 
     @devGroup.command(description="Load a cog")
     async def load_cog(
-        self, interaction: discord.Interaction, cog: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, cog: Literal["gw2", "events"]
     ):
         if cog == "gw2":
             await interaction.response.send_message(
                 content="GW2 module is not ready yet", ephemeral=True
             )
-        elif cog == "event":
+        elif cog == "events":
             # Check if the events manager cog is loaded
-            if "EventManager.event" in self.bot.extensions:
+            if "EventManager.events" in self.bot.extensions:
                 # Reload extension
-                await self.bot.reload_extension("EventManager.event")
+                await self.bot.reload_extension("EventManager.events")
                 await interaction.response.send_message(
                     content="Events manager cog reloaded", ephemeral=True
                 )
             else:
                 # Load extension
-                await self.bot.load_extension("EventManager.event")
+                await self.bot.load_extension("EventManager.events")
                 await interaction.response.send_message(
                     content="Events manager cog loaded", ephemeral=True
                 )
@@ -187,16 +187,16 @@ class General(commands.Cog):
 
     @devGroup.command(description="Unload a cog")
     async def unload_cog(
-        self, interaction: discord.Interaction, cog: Literal["gw2", "event"]
+        self, interaction: discord.Interaction, cog: Literal["gw2", "events"]
     ):
         if cog == "gw2":
             await interaction.response.send_message(
                 content="GW2 cog is not ready yet", ephemeral=True
             )
-        elif cog == "event":
+        elif cog == "events":
             # Check if the events manager cog is loaded
-            if "EventManager.event" in self.bot.extensions:
-                await self.bot.unload_extension("EventManager.event")
+            if "EventManager.events" in self.bot.extensions:
+                await self.bot.unload_extension("EventManager.events")
                 await interaction.response.send_message(
                     content="Events manager cog unloaded", ephemeral=True
                 )
