@@ -29,7 +29,7 @@ class RaidedBot(commands.Bot):
         await self.tree.sync(guild=serverID)
 
         # Load cogs on startup
-        await self.load_extension("EventManager.bot")
+        await self.load_extension("EventManager.event")
 
 
 class General(commands.Cog):
@@ -65,7 +65,7 @@ class General(commands.Cog):
             )
         elif module == "event":
             # Check if the events manager cog is loaded
-            if "EventManager.bot" in self.bot.extensions:
+            if "EventManager.event" in self.bot.extensions:
                 # Defer as this might take a bit
                 await interaction.response.defer(ephemeral=True, thinking=True)
 
@@ -98,7 +98,7 @@ class General(commands.Cog):
             )
         elif module == "event":
             # Check if the events manager cog is loaded
-            if "EventManager.bot" in self.bot.extensions:
+            if "EventManager.event" in self.bot.extensions:
                 # Defer as this might take a bit
                 await interaction.response.defer(ephemeral=True, thinking=True)
 
@@ -168,15 +168,15 @@ class General(commands.Cog):
             )
         elif cog == "event":
             # Check if the events manager cog is loaded
-            if "EventManager.bot" in self.bot.extensions:
+            if "EventManager.event" in self.bot.extensions:
                 # Reload extension
-                await self.bot.reload_extension("EventManager.bot")
+                await self.bot.reload_extension("EventManager.event")
                 await interaction.response.send_message(
                     content="Events manager cog reloaded", ephemeral=True
                 )
             else:
                 # Load extension
-                await self.bot.load_extension("EventManager.bot")
+                await self.bot.load_extension("EventManager.event")
                 await interaction.response.send_message(
                     content="Events manager cog loaded", ephemeral=True
                 )
@@ -195,8 +195,8 @@ class General(commands.Cog):
             )
         elif cog == "event":
             # Check if the events manager cog is loaded
-            if "EventManager.bot" in self.bot.extensions:
-                await self.bot.unload_extension("EventManager.bot")
+            if "EventManager.event" in self.bot.extensions:
+                await self.bot.unload_extension("EventManager.event")
                 await interaction.response.send_message(
                     content="Events manager cog unloaded", ephemeral=True
                 )
