@@ -56,6 +56,8 @@ class General(commands.Cog):
 
     moduleGroup = ModuleGroup()
 
+    # TODO: Add a module lister command
+
     @moduleGroup.command(description="Load a module's commands")
     async def load(
         self,
@@ -233,24 +235,25 @@ class General(commands.Cog):
         """Message command primarily for debugging"""
         await ctx.send("Pong!", ephemeral=True)
 
+    # TODO: Fix guild transformer, doesn't work for guild ID strings.
     @commands.command()
     @commands.is_owner()
     async def sync(
         self,
         ctx: commands.Context,
-        *,
-        options: Literal["unsync", "sync", "global"],
-        guild: discord.Guild = discord.Object(id=DEBUGGUILD),
+        action: Literal["unsync", "sync", "global"],
+        guild: discord.Guild = discord.Object(DEBUGGUILD),
     ):
         """Collection of commands to assist with syncing commands"""
-        if options == "unsync":
+        # guild = discord.Object(id=guild_id)
+        if action == "unsync":
             self.bot.tree.clear_commands(guild=guild)
             await self.bot.tree.sync(guild=guild)
             await ctx.send("Commands unsynced", ephemeral=True)
-        elif options == "sync":
+        elif action == "sync":
             await self.bot.tree.sync(guild=guild)
             await ctx.send("Commands synced", ephemeral=True)
-        elif options == "global":
+        elif action == "global":
             await self.bot.tree.sync()
             await ctx.send("Commands synced globally", ephemeral=True)
         else:
@@ -278,9 +281,11 @@ if __name__ == "__main__":
         if args.branch == "dev":
             application_id = config["dev_application_id"]
             botToken = config["dev_token"]
+            prefix = "%"
         elif args.branch == "prod":
             application_id = config["application_id"]
             botToken = config["token"]
+            prefix = "$"
         else:
             raise ValueError("Invalid branch")
 
@@ -300,7 +305,7 @@ if __name__ == "__main__":
     intents.message_content = True
 
     bot = RaidedBot(
-        command_prefix="$",
+        command_prefix=prefix,
         intents=intents,
         application_id=application_id,
     )
