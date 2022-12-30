@@ -5,6 +5,7 @@ import logging
 import json
 import asyncio
 from typing import Literal
+import argparse
 
 DEBUGGUILD = 826138485743288330
 
@@ -57,7 +58,9 @@ class General(commands.Cog):
 
     @moduleGroup.command(description="Load a module's commands")
     async def load(
-        self, interaction: discord.Interaction, module: Literal["events", "gw2"]
+        self,
+        interaction: discord.Interaction,
+        module: Literal["events", "gw2"],
     ):
         if module == "gw2":
             await interaction.response.send_message(
@@ -90,7 +93,9 @@ class General(commands.Cog):
 
     @moduleGroup.command(description="Unload a module's commands")
     async def unload(
-        self, interaction: discord.Interaction, module: Literal["events", "gw2"]
+        self,
+        interaction: discord.Interaction,
+        module: Literal["events", "gw2"],
     ):
         if module == "gw2":
             await interaction.response.send_message(
@@ -253,9 +258,31 @@ class General(commands.Cog):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="RaidedBot",
+        description="Raided.pro's Discord bot",
+    )
+    parser.add_argument(
+        "branch",
+        choices=["prod", "dev"],
+        help="Which credentials to run the bot on",
+        default="prod",
+    )
+
+    args = parser.parse_args()
+
     # Load config
-    with open("botDevConfig.json") as f:
+    with open("botConfig.json") as f:
         config = json.load(f)
+
+        if args.branch == "dev":
+            application_id = config["dev_application_id"]
+            botToken = config["dev_token"]
+        elif args.branch == "prod":
+            application_id = config["application_id"]
+            botToken = config["token"]
+        else:
+            raise ValueError("Invalid branch")
 
     # Setup logger
     logger = logging.getLogger("discord")
@@ -275,11 +302,11 @@ if __name__ == "__main__":
     bot = RaidedBot(
         command_prefix="$",
         intents=intents,
-        application_id=config["application_id"],
+        application_id=application_id,
     )
 
     async def setup(bot):
         await bot.add_cog(General(bot))
-        await bot.start(config["token"])
+        await bot.start(botToken)
 
     asyncio.run(setup(bot))
