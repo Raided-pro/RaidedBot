@@ -250,7 +250,6 @@ class General(commands.Cog):
         """Message command primarily for debugging"""
         await ctx.send("Pong!", ephemeral=True)
 
-    # TODO: Fix guild transformer, doesn't work for guild ID strings.
     @commands.command()
     @commands.is_owner()
     async def sync(
