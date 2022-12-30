@@ -56,7 +56,24 @@ class General(commands.Cog):
 
     moduleGroup = ModuleGroup()
 
-    # TODO: Add a module lister command
+    @moduleGroup.command(description="List loaded modules")
+    async def list(self, interaction: discord.Interaction):
+        ignoreModules = ["module", "dev"]
+        loadedModules = []
+
+        for module in self.bot.tree.get_commands(guild=interaction.guild):
+            if module.name not in ignoreModules:
+                loadedModules.append(module.name)
+
+        if len(loadedModules) == 0:
+            await interaction.response.send_message(
+                content="No modules loaded", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                content=f"Loaded modules: {', '.join(loadedModules)}",
+                ephemeral=True,
+            )
 
     @moduleGroup.command(description="Load a module's commands")
     async def load(
@@ -145,11 +162,9 @@ class General(commands.Cog):
         Removes all commands from cog from the guild's tree and syncs it then
         returns the number of commands removed
         """
-        counter = 0
-        for command in cog.walk_app_commands():
-            removed = self.bot.tree.remove_command(command.name, guild=guild)
-            if removed is not None:
-                counter += 1
+        # Remove the group of commands
+        counter = len(cog.app_command.commands)
+        self.bot.tree.remove_command(cog.app_command.name, guild=guild)
 
         await self.bot.tree.sync(guild=guild)
         return counter
@@ -245,7 +260,6 @@ class General(commands.Cog):
         guild: discord.Guild = discord.Object(DEBUGGUILD),
     ):
         """Collection of commands to assist with syncing commands"""
-        # guild = discord.Object(id=guild_id)
         if action == "unsync":
             self.bot.tree.clear_commands(guild=guild)
             await self.bot.tree.sync(guild=guild)
