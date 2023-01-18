@@ -45,6 +45,30 @@ class General(commands.Cog):
     async def on_ready(self):
         print(f"Logged on as {self.bot.user}!")
 
+        # Resync all existing commands from guilds
+        for guild in self.bot.guilds:
+            commands = await self.bot.tree.fetch_commands(guild=guild)
+            commands = [
+                command.name
+                for command in commands
+                if not command == "General"
+            ]
+
+            # Loop through extensions
+            for module in self.bot.extensions.values():
+                cogName, moduleName = module.__name__.split('.')
+
+                # Check if the guild has the module
+                if moduleName in commands:
+                    # Get cog
+                    cog = self.bot.get_cog(cogName)
+                    for command in cog.walk_app_commands():
+                        self.bot.tree.add_command(
+                            command, guild=guild, override=True
+                        )
+            # Sync guild
+            await self.bot.tree.sync(guild=guild)
+
     """
     Command group for module management
     """
